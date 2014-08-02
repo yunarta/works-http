@@ -6,14 +6,11 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.net.http.AndroidHttpClient;
-
 import com.mobilesolutionworks.android.http.io.CountingInputStream;
 import com.mobilesolutionworks.android.util.IOUtils;
 import com.mobilesolutionworks.android.util.TypeUtils;
-
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -34,6 +31,8 @@ public class WorksHttpClient
 {
     private static WorksHttpClient sInstance;
 
+    private final String mName;
+
     public static WorksHttpClient getInstance(Context context)
     {
         if (sInstance == null)
@@ -45,8 +44,6 @@ public class WorksHttpClient
     }
 
     private Context mContext;
-
-    private AndroidHttpClient mHttpClient;
 
     public WorksHttpClient(Context context)
     {
@@ -75,14 +72,13 @@ public class WorksHttpClient
         {
         }
 
-        mHttpClient = AndroidHttpClient.newInstance(name, mContext);
+        mName = name;
     }
 
-    public HttpClient getHttpClient()
+    public AndroidHttpClient getHttpClient()
     {
-        return mHttpClient;
+        return AndroidHttpClient.newInstance(mName, mContext);
     }
-
 
     public static <Result> WorksHttpResponse<Result> executeOperation(Context context, WorksHttpRequest request, final WorksHttpOperationListener listener)
     {
@@ -92,7 +88,7 @@ public class WorksHttpClient
         WorksHttpResponse<Result> response = new WorksHttpResponse<Result>();
         response.mRequest = request;
 
-        HttpClient client = WorksHttpClient.getInstance(context).getHttpClient();
+        AndroidHttpClient client = WorksHttpClient.getInstance(context).getHttpClient();
 
         switch (request.method)
         {
@@ -212,6 +208,7 @@ public class WorksHttpClient
         }
         finally
         {
+            client.close();
             if (httpResponse != null)
             {
                 try
