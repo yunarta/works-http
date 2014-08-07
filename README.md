@@ -1,4 +1,4 @@
-works-http
-==========
+Works HTTP - Experimental
+=========================
 
 Works Android HTTP Module
