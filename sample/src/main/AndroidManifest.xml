@@ -4,9 +4,8 @@
           package="com.mobilesolutionworks.android.http.test">
 
     <application
-        android:label="Widget Test"
-        android:icon="@drawable/ic_launcher">
-        <activity android:name="com.mobilesolutionworks.android.widget.test.MainActivity">
+        android:label="Widget Test">
+        <activity android:name="com.mobilesolutionworks.android.http.test.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
