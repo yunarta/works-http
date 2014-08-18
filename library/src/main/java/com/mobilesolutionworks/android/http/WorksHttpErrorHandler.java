@@ -17,13 +17,30 @@
 package com.mobilesolutionworks.android.http;
 
 /**
- * Created by mi on 30/3/14.
+ * Works http error handler listener.
  */
 public interface WorksHttpErrorHandler {
 
+    /**
+     * Process error in operation.
+     *
+     * @param request   works http request
+     * @param exception exception
+     */
     void onProcessError(WorksHttpRequest request, Throwable exception);
 
+    /**
+     * Process on net validation error.
+     *
+     * @param request    works http request
+     * @param statusCode status code
+     */
     void onNetError(WorksHttpRequest request, int statusCode);
 
+    /**
+     * Process on cancelled
+     *
+     * @param request works http request
+     */
     void onCancelled(WorksHttpRequest request);
 }

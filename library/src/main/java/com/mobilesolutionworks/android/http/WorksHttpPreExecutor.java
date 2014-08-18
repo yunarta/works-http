@@ -23,5 +23,11 @@ import org.apache.http.client.methods.HttpUriRequest;
  */
 public interface WorksHttpPreExecutor {
 
+    /**
+     * Called before the request is executed.
+     *
+     * @param request     works http request
+     * @param httpRequest commons http client request
+     */
     void onPreExecute(WorksHttpRequest request, HttpUriRequest httpRequest);
 }

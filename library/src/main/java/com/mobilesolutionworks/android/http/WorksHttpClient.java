@@ -22,7 +22,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.net.http.AndroidHttpClient;
-import com.mobilesolutionworks.android.http.io.CountingInputStream;
 import com.mobilesolutionworks.android.util.IOUtils;
 import com.mobilesolutionworks.android.util.TypeUtils;
 import org.apache.http.Header;
@@ -41,25 +40,28 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by yunarta on 22/1/14.
+ * Works http client, the main class for this library execution.
  */
 public class WorksHttpClient {
 
-    private static WorksHttpClient sInstance;
+    //-- class member --//
 
-    private final String mName;
-
-    public static WorksHttpClient getInstance(Context context) {
-        if (sInstance == null) {
-            sInstance = new WorksHttpClient(context);
-        }
-
-        return sInstance;
-    }
-
+    /**
+     * Application context
+     */
     private Context mContext;
 
-    public WorksHttpClient(Context context) {
+    /**
+     *
+     */
+    private final String mName;
+
+    /**
+     * Constructor of http client
+     *
+     * @param context application context
+     */
+    protected WorksHttpClient(Context context) {
         mContext = context.getApplicationContext();
         String name = mContext.getPackageName();
 
@@ -73,7 +75,7 @@ public class WorksHttpClient {
 
                 PackageInfo pi = pm.getPackageInfo(mContext.getPackageName(), 0);
                 if (pi != null) {
-                    name = name + " " + pi.versionName;
+                    name = name + " ver-" + pi.versionName + " build-" + pi.versionCode;
                 }
             }
         } catch (PackageManager.NameNotFoundException e) {
@@ -82,10 +84,54 @@ public class WorksHttpClient {
         mName = name;
     }
 
+    /**
+     * Get the android http client configured for this context
+     *
+     * @return the Android http client configured for this context
+     */
     public AndroidHttpClient getHttpClient() {
-        return AndroidHttpClient.newInstance(mName, mContext);
+        return AndroidHttpClient.newInstance(System.getProperty("http.agent"), mContext);
     }
 
+    /**
+     * Get the package name and version
+     *
+     * @return the package name and version;
+     */
+    public String getName() {
+        return mName;
+    }
+
+
+    //-- static member --//
+
+    /**
+     * Works http client instance
+     */
+    private static WorksHttpClient sInstance;
+
+    /**
+     * Get the works http client instance for this application context
+     *
+     * @param context application context
+     * @return works http client instance
+     */
+    public static WorksHttpClient getInstance(Context context) {
+        if (sInstance == null) {
+            sInstance = new WorksHttpClient(context);
+        }
+
+        return sInstance;
+    }
+
+    /**
+     * Execute the request on this works http client.
+     *
+     * @param context  application context
+     * @param request  works http request
+     * @param listener works operation listener
+     * @return works http response
+     */
     public static <Result> WorksHttpResponse<Result> executeOperation(Context context, WorksHttpRequest request, final WorksHttpOperationListener listener) {
         HttpUriRequest httpRequest;
         HttpResponse httpResponse = null;
@@ -93,7 +139,8 @@ public class WorksHttpClient {
         WorksHttpResponse<Result> response = new WorksHttpResponse<Result>();
         response.request = request;
 
-        AndroidHttpClient client = WorksHttpClient.getInstance(context).getHttpClient();
+        WorksHttpClient instance = WorksHttpClient.getInstance(context);
+        AndroidHttpClient client = instance.getHttpClient();
 
         switch (request.method) {
             default:
@@ -119,14 +166,19 @@ public class WorksHttpClient {
                         params.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
                     }
 
-                    UrlEncodedFormEntity postData = createForm(params);
-                    httpPost.setEntity(postData);
+                    UrlEncodedFormEntity result;
+
+                    try {
+                        result = new UrlEncodedFormEntity(params, "UTF-8");
+                        httpPost.setEntity(result);
+                    } catch (UnsupportedEncodingException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
 
                 httpRequest = httpPost;
             }
         }
-
 
         if (request.preExecutor != null) {
             request.preExecutor.onPreExecute(request, httpRequest);
@@ -134,6 +186,7 @@ public class WorksHttpClient {
 
         listener.onPreExecute(request, httpRequest);
 
+        httpRequest.addHeader("Works-Http-Client", instance.getName());
         try {
             httpResponse = client.execute(httpRequest);
             if (listener.onValidateResponse(request, httpResponse)) {
@@ -141,8 +194,7 @@ public class WorksHttpClient {
                 try {
                     handled = listener.onHandleResponse(request, httpRequest, response, httpResponse);
                 } catch (Exception e) {
-                    response.errorCode = WorksHttpResponse.ErrorCode.ERR_ERROR_IN_HANDLER;
-                    response.exception = e;
+                    response.markErrorInHandler(e);
                     handled = true;
                 }
 
@@ -158,31 +210,19 @@ public class WorksHttpClient {
 
                     if (request.returnTransfer) {
                         InputStream content = httpResponse.getEntity().getContent();
-                        response.text = IOUtils.consumeAsString(new CountingInputStream(content, new CountingInputStream.OnInputListener() {
-                            @Override
-                            public void onInputRead(int read, int maxSize) {
-                                listener.onReadProgressUpdate(read, maxSize);
-                            }
-                        }, contentLength));
+                        response.text = IOUtils.consumeAsString(new CountingInputStream(content, listener, contentLength));
                     } else if (request.out != null) {
                         InputStream content = httpResponse.getEntity().getContent();
-                        IOUtils.copy(new CountingInputStream(content, new CountingInputStream.OnInputListener() {
-                            @Override
-                            public void onInputRead(int read, int maxSize) {
-                                listener.onReadProgressUpdate(read, maxSize);
-                            }
-                        }, contentLength), request.out);
+                        IOUtils.copy(new CountingInputStream(content, listener, contentLength), request.out);
                     }
 
-                    response.errorCode = WorksHttpResponse.ErrorCode.OK;
+                    response.markSuccess();
                 }
             } else {
-                response.statusCode = httpResponse.getStatusLine().getStatusCode();
-                response.errorCode = WorksHttpResponse.ErrorCode.ERR_INVALID_HTTP_STATUS;
+                response.markInvalidHttpStatus(httpResponse.getStatusLine().getStatusCode());
             }
         } catch (Exception e) {
-            response.errorCode = WorksHttpResponse.ErrorCode.ERR_EXCEPTION;
-            response.exception = e;
+            response.markErrorInExecution(e);
         } finally {
             client.close();
             if (httpResponse != null) {
@@ -197,11 +237,58 @@ public class WorksHttpClient {
         return response;
     }
 
-    private static UrlEncodedFormEntity createForm(List<BasicNameValuePair> params) {
-        try {
-            return new UrlEncodedFormEntity(params, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+    /**
+     * Input stream for counting purpose.
+     */
+    static class CountingInputStream extends InputStream {
+
+        WorksHttpOperationListener mListener;
+
+        InputStream mIn;
+
+        int mCurrent;
+
+        int mMaxSize;
+
+        public CountingInputStream(InputStream in, WorksHttpOperationListener listener, int maxSize) {
+            mIn = in;
+            mListener = listener;
+            mMaxSize = maxSize;
+        }
+
+        @Override
+        public int read(byte[] buffer) throws IOException {
+            int read = mIn.read(buffer);
+            if (read != -1) {
+                mCurrent += read;
+                mListener.onReadProgressUpdate(mCurrent, mMaxSize);
+            }
+
+            return read;
+        }
+
+        @Override
+        public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
+            int read = mIn.read(buffer, byteOffset, byteCount);
+
+            if (read != -1) {
+                mCurrent += read;
+                mListener.onReadProgressUpdate(mCurrent, mMaxSize);
+            }
+
+            return read;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int read = mIn.read();
+
+            if (read != -1) {
+                mCurrent += 1;
+                mListener.onReadProgressUpdate(mCurrent, mMaxSize);
+            }
+
+            return read;
         }
     }
 }

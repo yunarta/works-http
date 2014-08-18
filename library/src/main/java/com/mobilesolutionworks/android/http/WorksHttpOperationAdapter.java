@@ -24,41 +24,95 @@ import org.apache.http.client.methods.HttpUriRequest;
  */
 public class WorksHttpOperationAdapter<Result> implements WorksHttpOperationListener<Result> {
 
+    /**
+     * Called before the request is executed.
+     *
+     * @param request     works http request
+     * @param httpRequest commons http client request
+     */
     @Override
     public void onPreExecute(WorksHttpRequest request, HttpUriRequest httpRequest) {
 
     }
 
+    /**
+     * Validate whether the response is valid, usually validate by status code.
+     *
+     * @param request      works http request
+     * @param httpResponse commons http client response
+     * @return true if response is valid
+     */
     @Override
     public boolean onValidateResponse(WorksHttpRequest request, HttpResponse httpResponse) {
-        return true;
+        return false;
     }
 
+    /**
+     * Response handler for manually process the http response data.
+     * <p/>
+     * Can be useful on big data or certain customized response format. You then need to set the finished response object into works http response.
+     *
+     * @param request      works http request
+     * @param httpRequest  commons http client request
+     * @param response     works http response
+     * @param httpResponse commons http client response
+     * @return
+     */
     @Override
     public boolean onHandleResponse(WorksHttpRequest request, HttpUriRequest httpRequest, WorksHttpResponse<Result> response, HttpResponse httpResponse) {
         return false;
     }
 
+    /**
+     * Called when the operation is finished and the data is ready.
+     *
+     * @param request    works http request
+     * @param statusCode status code
+     * @param data       result data
+     */
     @Override
     public void onLoadFinished(WorksHttpRequest request, int statusCode, Result data) {
 
     }
 
+    /**
+     * Implementation of process update.
+     *
+     * @param read total read
+     * @param size total size
+     */
     @Override
     public void onReadProgressUpdate(int read, int size) {
 
     }
 
+    /**
+     * Process error in operation.
+     *
+     * @param request   works http request
+     * @param exception exception
+     */
     @Override
     public void onProcessError(WorksHttpRequest request, Throwable exception) {
 
     }
 
+    /**
+     * Process on net validation error.
+     *
+     * @param request    works http request
+     * @param statusCode status code
+     */
     @Override
     public void onNetError(WorksHttpRequest request, int statusCode) {
 
     }
 
+    /**
+     * Process on cancelled
+     *
+     * @param request works http request
+     */
     @Override
     public void onCancelled(WorksHttpRequest request) {
 

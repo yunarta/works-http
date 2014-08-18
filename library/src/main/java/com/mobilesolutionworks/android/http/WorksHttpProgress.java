@@ -17,11 +17,17 @@
 package com.mobilesolutionworks.android.http;
 
 /**
- * Created by yunarta on 23/1/14.
+ * Works http process stat.
  */
 public class WorksHttpProgress {
 
+    /**
+     * Read total.
+     */
     public int read;
 
+    /**
+     * Total size.
+     */
     public int size;
 }

@@ -33,6 +33,29 @@ public class WorksHttpResponse<Data> {
 
     public Exception exception;
 
+    public void markErrorInHandler(Exception e) {
+        errorCode = WorksHttpResponse.ErrorCode.ERR_ERROR_IN_HANDLER;
+        exception = e;
+    }
+
+    public void markErrorInExecution(Exception e) {
+        errorCode = WorksHttpResponse.ErrorCode.ERR_EXCEPTION;
+        exception = e;
+    }
+
+    public void markInvalidHttpStatus(int status) {
+        statusCode = status;
+        errorCode = WorksHttpResponse.ErrorCode.ERR_INVALID_HTTP_STATUS;
+    }
+
+    public void markSuccess() {
+        errorCode = WorksHttpResponse.ErrorCode.OK;
+    }
+
+    public void markCancelled() {
+        errorCode = WorksHttpResponse.ErrorCode.ERR_CANCELLED;
+    }
+
     public enum ErrorCode {
         OK,
         ERR_CANCELLED,

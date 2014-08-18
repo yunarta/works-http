@@ -24,25 +24,49 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpUriRequest;
 
 /**
- * Created by yunarta on 22/1/14.
+ * AsyncTask implementation of works http operator.
  */
 public abstract class WorksHttpAsyncTask<Result> extends AsyncTask<WorksHttpRequest, WorksHttpProgress, WorksHttpResponse<Result>> implements WorksHttpOperationListener<Result> {
 
+    /**
+     * Application context
+     */
     Context mContext;
 
+    /**
+     * Progress monitor
+     */
     WorksHttpProgress mProgress;
 
+    /**
+     * Error handler
+     */
     WorksHttpErrorHandler mErrorHandler;
 
+    /**
+     * Create works http {@link android.os.AsyncTask} for specified context.
+     *
+     * @param context any android context
+     */
     public WorksHttpAsyncTask(Context context) {
         mContext = context;
         mProgress = new WorksHttpProgress();
     }
 
+    /**
+     * Set the error handler if desired instead overriding error handling methods.
+     *
+     * @param errorHandler works http error handler
+     */
     public void setErrorHandler(WorksHttpErrorHandler errorHandler) {
         mErrorHandler = errorHandler;
     }
 
+    /**
+     * Android context where works http executed.
+     *
+     * @return android context
+     */
     protected Context getContext() {
         return mContext;
     }
@@ -57,6 +81,17 @@ public abstract class WorksHttpAsyncTask<Result> extends AsyncTask<WorksHttpRequ
 
     }
 
+    /**
+     * Response handler for manually process the http response data.
+     * <p/>
+     * Can be useful on big data or certain customized response format. You then need to set the finished response object into works http response.
+     *
+     * @param request      works http request
+     * @param httpRequest  commons http client request
+     * @param response     works http response
+     * @param httpResponse commons http client response
+     * @return
+     */
     @Override
     public boolean onHandleResponse(WorksHttpRequest request, HttpUriRequest httpRequest, WorksHttpResponse<Result> response, HttpResponse httpResponse) {
         return false;
@@ -65,53 +100,72 @@ public abstract class WorksHttpAsyncTask<Result> extends AsyncTask<WorksHttpRequ
     @Override
     protected final void onPostExecute(WorksHttpResponse<Result> response) {
         super.onPostExecute(response);
-        if (isCancelled()) {
-            response.errorCode = WorksHttpResponse.ErrorCode.ERR_CANCELLED;
-        }
 
-        switch (response.errorCode) {
-            case OK: {
-                try {
-                    if (response.request.returnTransfer) {
-                        onLoadFinished(response.request, response.statusCode, (Result) response.text);
-                    } else {
-                        onLoadFinished(response.request, response.statusCode, (Result) response.data);
+        try {
+            if (isCancelled()) {
+                response.markCancelled();
+            }
+
+            switch (response.errorCode) {
+                case OK: {
+                    try {
+                        if (response.request.returnTransfer) {
+                            onLoadFinished(response.request, response.statusCode, (Result) response.text);
+                        } else {
+                            onLoadFinished(response.request, response.statusCode, (Result) response.data);
+                        }
+                    } catch (Exception e) {
+                        onProcessError(response.request, response.exception);
                     }
-                } catch (Exception e) {
-                    onProcessError(response.request, response.exception);
+                    break;
                 }
-                break;
-            }
 
-            case ERR_CANCELLED: {
-                onCancelled(response.request);
-                break;
-            }
+                case ERR_CANCELLED: {
+                    onCancelled(response.request);
+                    break;
+                }
 
-            case ERR_EXCEPTION: {
-                onProcessError(response.request, response.exception);
-                break;
-            }
+                case ERR_EXCEPTION: {
+                    onProcessError(response.request, response.exception);
+                    break;
+                }
 
-            case ERR_INVALID_HTTP_STATUS: {
-                onNetError(response.request, response.statusCode);
-                break;
+                case ERR_INVALID_HTTP_STATUS: {
+                    onNetError(response.request, response.statusCode);
+                    break;
+                }
             }
+        } finally {
+            onFinalized();
         }
-
-        onFinalized();
     }
 
+    /**
+     * Called after all processes is finished.
+     */
     protected void onFinalized() {
 
     }
 
+    /**
+     * Validate whether the response is valid, usually validate by status code.
+     *
+     * @param request      works http request
+     * @param httpResponse commons http client response
+     * @return true if response is valid
+     */
     @Override
     public boolean onValidateResponse(WorksHttpRequest request, HttpResponse httpResponse) {
         StatusLine statusLine = httpResponse.getStatusLine();
         return (statusLine.getStatusCode() >= 200) && (statusLine.getStatusCode() <= 404);
     }
 
+    /**
+     * Implementation of process update.
+     *
+     * @param read total read
+     * @param size total size
+     */
     @Override
     public void onReadProgressUpdate(int read, int size) {
         mProgress.read = read;
@@ -120,6 +174,12 @@ public abstract class WorksHttpAsyncTask<Result> extends AsyncTask<WorksHttpRequ
         publishProgress(mProgress);
     }
 
+    /**
+     * Process error in operation.
+     *
+     * @param request   works http request
+     * @param exception exception
+     */
     @Override
     public void onProcessError(WorksHttpRequest request, Throwable exception) {
         if (mErrorHandler != null) {
@@ -127,6 +187,12 @@ public abstract class WorksHttpAsyncTask<Result> extends AsyncTask<WorksHttpRequ
         }
     }
 
+    /**
+     * Process on net validation error.
+     *
+     * @param request    works http request
+     * @param statusCode status code
+     */
     @Override
     public void onNetError(WorksHttpRequest request, int statusCode) {
         if (mErrorHandler != null) {
@@ -134,6 +200,11 @@ public abstract class WorksHttpAsyncTask<Result> extends AsyncTask<WorksHttpRequ
         }
     }
 
+    /**
+     * Process on cancelled
+     *
+     * @param request works http request
+     */
     @Override
     public void onCancelled(WorksHttpRequest request) {
         if (mErrorHandler != null) {

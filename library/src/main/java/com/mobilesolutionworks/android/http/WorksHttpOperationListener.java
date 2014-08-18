@@ -20,17 +20,54 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 
 /**
- * Created by yunarta on 22/1/14.
+ * Works http operation listener.
  */
 public interface WorksHttpOperationListener<Result> extends WorksHttpErrorHandler {
 
+    /**
+     * Called before the request is executed.
+     *
+     * @param request     works http request
+     * @param httpRequest commons http client request
+     */
     void onPreExecute(WorksHttpRequest request, HttpUriRequest httpRequest);
 
+    /**
+     * Validate whether the response is valid, usually validate by status code.
+     *
+     * @param request      works http request
+     * @param httpResponse commons http client response
+     * @return true if response is valid
+     */
     boolean onValidateResponse(WorksHttpRequest request, HttpResponse httpResponse);
 
+    /**
+     * Response handler for manually process the http response data.
+     * <p/>
+     * Can be useful on big data or certain customized response format. You then need to set the finished response object into works http response.
+     *
+     * @param request      works http request
+     * @param httpRequest  commons http client request
+     * @param response     works http response
+     * @param httpResponse commons http client response
+     * @return
+     */
     boolean onHandleResponse(WorksHttpRequest request, HttpUriRequest httpRequest, WorksHttpResponse<Result> response, HttpResponse httpResponse);
 
+    /**
+     * Called when the operation is finished and the data is ready.
+     *
+     * @param request    works http request
+     * @param statusCode status code
+     * @param data       result data
+     */
     void onLoadFinished(WorksHttpRequest request, int statusCode, Result data);
 
+    /**
+     * Implementation of process update.
+     *
+     * @param read total read
+     * @param size total size
+     */
     void onReadProgressUpdate(int read, int size);
 }

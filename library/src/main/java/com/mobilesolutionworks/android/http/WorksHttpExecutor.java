@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Created by yunarta on 23/1/14.
+ * Thread executor.
  */
 public class WorksHttpExecutor {
 
@@ -43,13 +43,6 @@ public class WorksHttpExecutor {
     };
 
     private static final BlockingQueue<Runnable> sPoolWorkQueue = new LinkedBlockingQueue<Runnable>(10);
-
-    public static final Executor THREAD_POOL_EXECUTOR =
-            new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE,
-                    TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory);
-
-    public static final Executor SERIAL_EXECUTOR =
-            new SerialExecutor();
 
     private static class SerialExecutor implements Executor {
 
@@ -79,4 +72,15 @@ public class WorksHttpExecutor {
         }
     }
 
+    /**
+     * Parallel executor.
+     */
+    public static final Executor THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(
+            CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE, TimeUnit.SECONDS, sPoolWorkQueue, sThreadFactory
+    );
+
+    /**
+     * Serial executor.
+     */
+    public static final Executor SERIAL_EXECUTOR = new SerialExecutor();
 }

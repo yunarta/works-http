@@ -23,30 +23,62 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by yunarta on 22/1/14.
+ * Works http request.
  */
 public class WorksHttpRequest {
 
+    /**
+     * Request url
+     */
     public String url;
 
+    /**
+     * Request method.
+     */
     public Method method = Method.GET;
 
+    /**
+     * Return the result as a string.
+     */
     public boolean returnTransfer = true;
 
+    /**
+     * Write the result into this output stream.
+     */
     public OutputStream out;
 
+    /**
+     * Pre executor
+     */
     public WorksHttpPreExecutor preExecutor;
 
+    /**
+     * Request method enumeration.
+     */
     public static enum Method {
         GET, POST
     }
 
+    /**
+     * Http post parameters.
+     */
     protected Map<String, String> httpParams;
 
+    /**
+     * Get all http post parameters.
+     *
+     * @return all http post parameters
+     */
     public Map<String, String> getHttpParams() {
         return httpParams;
     }
 
+    /**
+     * Get post parameter for specified key.
+     *
+     * @param key parameter key
+     * @return parameter value
+     */
     public String getPostParam(String key) {
         if (httpParams == null) {
             return null;
@@ -54,6 +86,13 @@ public class WorksHttpRequest {
 
         return httpParams.get(key);
     }
+
+    /**
+     * Set post parameter for specified key.
+     *
+     * @param key   parameter key
+     * @param value parameter value
+     */
 
     public void setPostParam(String key, String value) {
         if (httpParams == null) {
@@ -66,8 +105,20 @@ public class WorksHttpRequest {
         }
     }
 
+    /**
+     * Request parameter.
+     */
     protected Map<String, Object> params;
 
+    /**
+     * Get request parameter for specified key.
+     * <p/>
+     * Parameter is used for storing operation data.
+     *
+     * @param key parameter key
+     * @param <D> parameter type
+     * @return parameter value
+     */
     public <D> D getParameter(String key) {
         if (params == null) {
             return null;
@@ -75,6 +126,15 @@ public class WorksHttpRequest {
 
         return (D) params.get(key);
     }
+
+    /**
+     * Set request parameter for specified key.
+     * <p/>
+     * Parameter is used for storing operation data.
+     *
+     * @param key   parameter key
+     * @param value parameter value
+     */
 
     public void setParameter(String key, Object value) {
         if (params == null) {

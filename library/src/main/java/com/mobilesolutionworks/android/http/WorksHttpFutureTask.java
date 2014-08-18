@@ -28,28 +28,68 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.FutureTask;
 
 /**
- * Created by yunarta on 22/1/14.
+ * Implementation that is using FutureTask for background operation.
  */
 public abstract class WorksHttpFutureTask<Result> implements WorksHttpOperationListener {
 
+    /**
+     * Application context
+     */
     Context mContext;
 
+    /**
+     * Future task.
+     */
     FutureTask<Result> mFuture;
 
+    /**
+     * Runnable for the future task.
+     */
     WorkerRunnable<WorksHttpRequest, Result> mWorker;
 
+    /**
+     *
+     */
     WorksHttpProgress mProgress;
+
+    /**
+     * Create works http future task for specified context.
+     *
+     * @param context any android context
+     */
 
     public WorksHttpFutureTask(Context context) {
         mContext = context;
         mProgress = new WorksHttpProgress();
     }
 
+    /**
+     * Execute specified works http request in parallel.
+     *
+     * @param request works http request
+     */
     public void execute(WorksHttpRequest request) {
-        execute(WorksHttpExecutor.THREAD_POOL_EXECUTOR, new Handler(), request);
+        execute(request, new Handler(), WorksHttpExecutor.THREAD_POOL_EXECUTOR);
     }
 
-    public void execute(Executor exec, Handler handler, WorksHttpRequest request) {
+    /**
+     * Execute specified works http request in parallel.
+     *
+     * @param request works http request
+     * @param handler android handler
+     */
+    public void execute(WorksHttpRequest request, Handler handler) {
+        execute(request, handler, WorksHttpExecutor.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * Execute specified works http request in parallel.
+     *
+     * @param request works http request
+     * @param handler android handler
+     * @param exec    executor so it can be run in serial or other controlled manner
+     */
+    public void execute(WorksHttpRequest request, Handler handler, Executor exec) {
         mWorker = new WorkerRunnable<WorksHttpRequest, Result>() {
             @Override
             public Result call() throws Exception {
@@ -69,6 +109,9 @@ public abstract class WorksHttpFutureTask<Result> implements WorksHttpOperationL
         exec.execute(mFuture);
     }
 
+    /**
+     * Cancel the operation.
+     */
     public void cancel() {
         mFuture.cancel(true);
     }
@@ -121,12 +164,25 @@ public abstract class WorksHttpFutureTask<Result> implements WorksHttpOperationL
 
     }
 
+    /**
+     * Validate whether the response is valid, usually validate by status code.
+     *
+     * @param request      works http request
+     * @param httpResponse commons http client response
+     * @return true if response is valid
+     */
     @Override
     public boolean onValidateResponse(WorksHttpRequest request, HttpResponse httpResponse) {
         StatusLine statusLine = httpResponse.getStatusLine();
         return (statusLine.getStatusCode() >= 200) && (statusLine.getStatusCode() < 400);
     }
 
+    /**
+     * Implementation of process update.
+     *
+     * @param read total read
+     * @param size total size
+     */
     @Override
     public void onReadProgressUpdate(final int read, final int size) {
 
@@ -140,11 +196,25 @@ public abstract class WorksHttpFutureTask<Result> implements WorksHttpOperationL
         });
     }
 
-    protected abstract void onReadProgressUpdate(WorksHttpProgress progress);
+    /**
+     * Read progress update.
+     *
+     * @param progress works http progress
+     */
+    protected void onReadProgressUpdate(WorksHttpProgress progress) {
+
+    }
 
     protected static abstract class WorkerRunnable<Params, Result> implements Callable<Result> {
 
+        /**
+         * Parameters.
+         */
         Params[] mParams;
+
+        /**
+         * Handler.
+         */
         Handler mHandler;
     }
 
