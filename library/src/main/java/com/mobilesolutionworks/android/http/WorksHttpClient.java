@@ -145,8 +145,7 @@ public class WorksHttpClient {
         switch (request.method) {
             default:
             case GET: {
-                Uri.Builder builder = new Uri.Builder();
-                builder.appendEncodedPath(request.url);
+                Uri.Builder builder = Uri.parse(request.url).buildUpon();
 
                 if (request.httpParams != null) {
                     for (Map.Entry<String, String> entry : request.httpParams.entrySet()) {

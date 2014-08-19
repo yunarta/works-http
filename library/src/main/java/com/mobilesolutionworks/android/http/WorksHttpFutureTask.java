@@ -22,6 +22,7 @@ import android.os.Process;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
+import org.apache.http.client.methods.HttpUriRequest;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -30,7 +31,7 @@ import java.util.concurrent.FutureTask;
 /**
  * Implementation that is using FutureTask for background operation.
  */
-public abstract class WorksHttpFutureTask<Result> implements WorksHttpOperationListener {
+public abstract class WorksHttpFutureTask<Result> implements WorksHttpOperationListener<Result> {
 
     /**
      * Application context
@@ -165,6 +166,17 @@ public abstract class WorksHttpFutureTask<Result> implements WorksHttpOperationL
     }
 
     /**
+     * Called before the request is executed.
+     *
+     * @param request     works http request
+     * @param httpRequest commons http client request
+     */
+    @Override
+    public void onPreExecute(WorksHttpRequest request, HttpUriRequest httpRequest) {
+
+    }
+
+    /**
      * Validate whether the response is valid, usually validate by status code.
      *
      * @param request      works http request
@@ -175,6 +187,22 @@ public abstract class WorksHttpFutureTask<Result> implements WorksHttpOperationL
     public boolean onValidateResponse(WorksHttpRequest request, HttpResponse httpResponse) {
         StatusLine statusLine = httpResponse.getStatusLine();
         return (statusLine.getStatusCode() >= 200) && (statusLine.getStatusCode() < 400);
+    }
+
+    /**
+     * Response handler for manually process the http response data.
+     * <p/>
+     * Can be useful on big data or certain customized response format. You then need to set the finished response object into works http response.
+     *
+     * @param request      works http request
+     * @param httpRequest  commons http client request
+     * @param response     works http response
+     * @param httpResponse commons http client response
+     * @return
+     */
+    @Override
+    public boolean onHandleResponse(WorksHttpRequest request, HttpUriRequest httpRequest, WorksHttpResponse response, HttpResponse httpResponse) {
+        return false;
     }
 
     /**
@@ -202,6 +230,38 @@ public abstract class WorksHttpFutureTask<Result> implements WorksHttpOperationL
      * @param progress works http progress
      */
     protected void onReadProgressUpdate(WorksHttpProgress progress) {
+
+    }
+
+    /**
+     * Process error in operation.
+     *
+     * @param request   works http request
+     * @param exception exception
+     */
+    @Override
+    public void onProcessError(WorksHttpRequest request, Throwable exception) {
+
+    }
+
+    /**
+     * Process on net validation error.
+     *
+     * @param request    works http request
+     * @param statusCode status code
+     */
+    @Override
+    public void onNetError(WorksHttpRequest request, int statusCode) {
+
+    }
+
+    /**
+     * Process on cancelled
+     *
+     * @param request works http request
+     */
+    @Override
+    public void onCancelled(WorksHttpRequest request) {
 
     }
 
