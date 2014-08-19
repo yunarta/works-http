@@ -3,9 +3,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.mobilesolutionworks.android.http.test">
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
-        android:label="Widget Test">
-        <activity android:name="com.mobilesolutionworks.android.http.test.MainActivity">
+            android:icon="@drawable/ic_launcher"
+            android:theme="@style/ThemeCompat"
+            android:label="Http Test">
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

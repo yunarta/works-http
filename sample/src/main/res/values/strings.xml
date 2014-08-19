@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="use_asynctask">Use AsyncTask</string>
+    <string name="use_futuretask">Use FutureTask</string>
+</resources>
