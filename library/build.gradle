@@ -6,7 +6,7 @@ repositories {
 }
 
 group 'com.mobilesolutionworks'
-version '1.0'
+version '1.0.0'
 
 android {
     compileSdkVersion 19
@@ -24,12 +24,14 @@ android {
         minSdkVersion 10
         targetSdkVersion androidTargetSdkVersion
         versionCode 2
-        versionName "1.0"
+        versionName "1.0.0"
     }
     buildTypes {
         release {
             runProguard false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            if (runProguard) {
+                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            }
         }
     }
 }
@@ -89,43 +91,46 @@ signing {
 }
 
 uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment {
-                MavenDeployment deployment -> signing.signPom(deployment)
-            }
-            pom = generatePom()
+    if (project.hasProperty('sonatypeUsername')) {
+        repositories {
+            mavenDeployer {
+                beforeDeployment {
+                    MavenDeployment deployment -> signing.signPom(deployment)
+                }
+                pom = generatePom()
 
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: sonatypeUsername, password: sonatypePassword)
-            }
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: sonatypeUsername, password: sonatypePassword)
+                }
 
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
-                authentication(userName: sonatypeUsername, password: sonatypePassword)
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+                    authentication(userName: sonatypeUsername, password: sonatypePassword)
+                }
             }
         }
     }
 }
 
 android.libraryVariants.all { variant ->
-    def name = variant.buildType.name
-    if (name.equals(com.android.builder.core.BuilderConstants.DEBUG)) {
-        return;
-    }
+    if (project.hasProperty('androidSdkDir')) {
+        def name = variant.buildType.name
+        if (name.equals(com.android.builder.core.BuilderConstants.DEBUG)) {
+            return;
+        }
 
-    task("javadoc${variant.name.capitalize()}", type: Javadoc) {
-        description "Generates Javadoc for $variant.name."
-        source = variant.javaCompile.source
-        ext.androidJar = project.androidSdkDir + "/platforms/${android.compileSdkVersion}/android.jar"
-        classpath = files(variant.javaCompile.classpath.files) + files(ext.androidJar)
-    }
+        task("javadoc${variant.name.capitalize()}", type: Javadoc) {
+            description "Generates Javadoc for $variant.name."
+            source = variant.javaCompile.source
+            ext.androidJar = project.androidSdkDir + "/platforms/${android.compileSdkVersion}/android.jar"
+            classpath = files(variant.javaCompile.classpath.files) + files(ext.androidJar)
+        }
 
-    task("bundleJavadoc${variant.name.capitalize()}", type: Jar) {
-        description "Bundles Javadoc into zip for $variant.name."
-        classifier = "javadoc"
-        from tasks["javadoc${variant.name.capitalize()}"]
+        task("bundleJavadoc${variant.name.capitalize()}", type: Jar) {
+            description "Bundles Javadoc into zip for $variant.name."
+            classifier = "javadoc"
+            from tasks["javadoc${variant.name.capitalize()}"]
+        }
     }
-
 }
 
 task sourcesJar(type: Jar) {
