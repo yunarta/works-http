@@ -42,7 +42,7 @@ new WorksHttpAsyncTask<String>(this) {
 
     @Override
     public void onLoadFinished(WorksHttpRequest request, int statusCode, String data) {
-        // receive the processresult here
+        // receive the process result here
     }
 }.execute(request);
 
@@ -52,7 +52,7 @@ new WorksHttpFutureTask<String>(this) {
 
     @Override
     public void onLoadFinished(WorksHttpRequest request, int statusCode, String data) {
-        // receive the processresult here
+        // receive the process result here
     }
 }.execute(request);
 ```
