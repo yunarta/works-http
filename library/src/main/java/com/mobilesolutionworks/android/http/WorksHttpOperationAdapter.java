@@ -44,7 +44,7 @@ public class WorksHttpOperationAdapter<Result> implements WorksHttpOperationList
      */
     @Override
     public boolean onValidateResponse(WorksHttpRequest request, HttpResponse httpResponse) {
-        return false;
+        return true;
     }
 
     /**
