@@ -189,6 +189,8 @@ public class WorksHttpClient {
         try {
             httpResponse = client.execute(httpRequest);
             if (listener.onValidateResponse(request, httpResponse)) {
+                response.statusCode = httpResponse.getStatusLine().getStatusCode();
+
                 boolean handled = false;
                 try {
                     handled = listener.onHandleResponse(request, httpRequest, response, httpResponse);
