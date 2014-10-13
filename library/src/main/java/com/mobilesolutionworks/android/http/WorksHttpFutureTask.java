@@ -19,10 +19,11 @@ package com.mobilesolutionworks.android.http;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Process;
-
+import com.mobilesolutionworks.concurrent.Cancelable;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.protocol.HttpContext;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -31,7 +32,7 @@ import java.util.concurrent.FutureTask;
 /**
  * Implementation that is using FutureTask for background operation.
  */
-public abstract class WorksHttpFutureTask<Result> implements WorksHttpOperationListener<Result> {
+public abstract class WorksHttpFutureTask<Result> implements WorksHttpOperationListener<Result>, Cancelable {
 
     /**
      * Application context
@@ -224,6 +225,11 @@ public abstract class WorksHttpFutureTask<Result> implements WorksHttpOperationL
         });
     }
 
+    @Override
+    public HttpContext getHttpContext() {
+        return null;
+    }
+
     /**
      * Read progress update.
      *
@@ -263,6 +269,21 @@ public abstract class WorksHttpFutureTask<Result> implements WorksHttpOperationL
     @Override
     public void onCancelled(WorksHttpRequest request) {
 
+    }
+
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        return mFuture.cancel(true);
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return mFuture.isCancelled();
+    }
+
+    @Override
+    public boolean isDone() {
+        return mFuture.isDone();
     }
 
     protected static abstract class WorkerRunnable<Params, Result> implements Callable<Result> {

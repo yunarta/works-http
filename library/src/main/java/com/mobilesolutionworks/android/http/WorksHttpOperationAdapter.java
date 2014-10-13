@@ -18,6 +18,7 @@ package com.mobilesolutionworks.android.http;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.protocol.HttpContext;
 
 /**
  * Created by yunarta on 13/8/14.
@@ -84,6 +85,11 @@ public class WorksHttpOperationAdapter<Result> implements WorksHttpOperationList
     @Override
     public void onReadProgressUpdate(int read, int size) {
 
+    }
+
+    @Override
+    public HttpContext getHttpContext() {
+        return null;
     }
 
     /**

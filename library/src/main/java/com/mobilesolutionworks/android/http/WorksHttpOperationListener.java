@@ -18,6 +18,7 @@ package com.mobilesolutionworks.android.http;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.protocol.HttpContext;
 
 /**
  * Works http operation listener.
@@ -70,4 +71,11 @@ public interface WorksHttpOperationListener<Result> extends WorksHttpErrorHandle
      * @param size total size
      */
     void onReadProgressUpdate(int read, int size);
+
+    /**
+     * Get HttpContext which required for cookie management.
+     *
+     * @return HttpContext, can be used for cookie management.
+     */
+    HttpContext getHttpContext();
 }

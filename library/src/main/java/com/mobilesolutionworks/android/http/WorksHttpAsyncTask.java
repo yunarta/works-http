@@ -18,15 +18,16 @@ package com.mobilesolutionworks.android.http;
 
 import android.content.Context;
 import android.os.AsyncTask;
-
+import com.mobilesolutionworks.concurrent.Cancelable;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.protocol.HttpContext;
 
 /**
  * AsyncTask implementation of works http operator.
  */
-public abstract class WorksHttpAsyncTask<Result> extends AsyncTask<WorksHttpRequest, WorksHttpProgress, WorksHttpResponse<Result>> implements WorksHttpOperationListener<Result> {
+public abstract class WorksHttpAsyncTask<Result> extends AsyncTask<WorksHttpRequest, WorksHttpProgress, WorksHttpResponse<Result>> implements WorksHttpOperationListener<Result>, Cancelable {
 
     /**
      * Application context
@@ -174,6 +175,11 @@ public abstract class WorksHttpAsyncTask<Result> extends AsyncTask<WorksHttpRequ
         publishProgress(mProgress);
     }
 
+    @Override
+    public HttpContext getHttpContext() {
+        return null;
+    }
+
     /**
      * Process error in operation.
      *
@@ -210,5 +216,10 @@ public abstract class WorksHttpAsyncTask<Result> extends AsyncTask<WorksHttpRequ
         if (mErrorHandler != null) {
             mErrorHandler.onCancelled(request);
         }
+    }
+
+    @Override
+    public boolean isDone() {
+        return getStatus() == Status.FINISHED;
     }
 }

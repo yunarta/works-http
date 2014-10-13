@@ -31,6 +31,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HttpContext;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -133,7 +134,7 @@ public class WorksHttpClient {
      * @return works http response
      */
     public static <Result> WorksHttpResponse<Result> executeOperation(Context context, WorksHttpRequest request, final WorksHttpOperationListener listener) {
-        HttpUriRequest httpRequest;
+        final HttpUriRequest httpRequest;
         HttpResponse httpResponse = null;
 
         WorksHttpResponse<Result> response = new WorksHttpResponse<Result>();
@@ -179,6 +180,13 @@ public class WorksHttpClient {
             }
         }
 
+        request.abortable = new WorksHttpRequest.Abortable() {
+            @Override
+            public void abort() {
+                httpRequest.abort();
+            }
+        };
+
         if (request.preExecutor != null) {
             request.preExecutor.onPreExecute(request, httpRequest);
         }
@@ -187,7 +195,9 @@ public class WorksHttpClient {
 
         httpRequest.addHeader("Works-Http-Client", instance.getName());
         try {
-            httpResponse = client.execute(httpRequest);
+            HttpContext httpContext = listener.getHttpContext();
+            httpResponse = client.execute(httpRequest, httpContext);
+
             if (listener.onValidateResponse(request, httpResponse)) {
                 response.statusCode = httpResponse.getStatusLine().getStatusCode();
 

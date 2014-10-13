@@ -143,4 +143,16 @@ public class WorksHttpRequest {
 
         params.put(key, value);
     }
+
+    interface Abortable {
+        void abort();
+    }
+
+    public Abortable abortable;
+
+    public void abort() {
+        if (abortable != null) {
+            abortable.abort();
+        }
+    }
 }
