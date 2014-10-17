@@ -22,8 +22,10 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.net.http.AndroidHttpClient;
+
 import com.mobilesolutionworks.android.util.IOUtils;
 import com.mobilesolutionworks.android.util.TypeUtils;
+
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -235,7 +237,11 @@ public class WorksHttpClient {
         } catch (Exception e) {
             response.markErrorInExecution(e);
         } finally {
-            client.close();
+            try {
+                client.close();
+            } catch (Exception e) {
+                // e.printStackTrace();
+            }
             if (httpResponse != null) {
                 try {
                     httpResponse.getEntity().consumeContent();
