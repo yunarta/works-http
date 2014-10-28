@@ -19,7 +19,7 @@ package com.mobilesolutionworks.android.http;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Process;
-import com.mobilesolutionworks.concurrent.Cancelable;
+import com.mobilesolutionworks.android.concurrent.Cancelable;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpUriRequest;
