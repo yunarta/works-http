@@ -16,12 +16,17 @@ android {
         androidTargetSdkVersion = project.androidTargetSdkVersion
     }
 
+    lintOptions {
+        abortOnError false
+    }
+
     defaultConfig {
         minSdkVersion 8
         targetSdkVersion androidTargetSdkVersion
         versionCode 2
         versionName "1.0.5"
     }
+
     buildTypes {
         release {
 //            runProguard false
