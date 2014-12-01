@@ -237,17 +237,18 @@ public class WorksHttpClient {
         } catch (Exception e) {
             response.markErrorInExecution(e);
         } finally {
-            try {
-                client.close();
-            } catch (Exception e) {
-                // e.printStackTrace();
-            }
             if (httpResponse != null) {
                 try {
                     httpResponse.getEntity().consumeContent();
                 } catch (IOException e) {
                     // e.printStackTrace();
                 }
+            }
+
+            try {
+                client.close();
+            } catch (Exception e) {
+                // e.printStackTrace();
             }
         }
 
