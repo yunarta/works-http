@@ -7,6 +7,7 @@ version '1.0.5'
 android {
     compileSdkVersion 21
     buildToolsVersion "21.1.0"
+    useLibrary 'org.apache.http.legacy'
 
     def androidTargetSdkVersion = compileSdkVersion
 
@@ -151,4 +152,7 @@ artifacts {
     archives sourcesJar
     archives javadocJar
     archives jar
+}
+dependencies {
+    compile 'cz.msebera.android:httpclient:4.3.6'
 }
