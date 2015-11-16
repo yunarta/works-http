@@ -11,7 +11,7 @@ A simple to use Http library, but still offering low level customization and pro
  * Put the AAR in the **libs** subfolder of your Android project
  * If you are using gradle you can use this dependency setting below
 ``` groovy
-compile(name:'works-http-1.0')
+compile(name:'works-widget-1.0.1', ext:'aar')
 ```
 
 or
